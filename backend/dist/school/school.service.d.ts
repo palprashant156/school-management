@@ -18,7 +18,11 @@ export declare class SchoolService {
     findAllTeachers(): Promise<Teacher[]>;
     createTeacher(data: Partial<Teacher>): Promise<Partial<Teacher> & Teacher>;
     findAllAttendance(): Promise<Attendance[]>;
-    createAttendance(data: Partial<Attendance>): Promise<Partial<Attendance> & Attendance>;
+    createAttendance(data: (Partial<Attendance> & {
+        student_id: string;
+    })[]): Promise<Attendance[]>;
     findAllMarks(): Promise<Mark[]>;
-    createMark(data: Partial<Mark>): Promise<Partial<Mark> & Mark>;
+    createMark(data: (Partial<Mark> & {
+        student_id: string;
+    })[]): Promise<Mark[]>;
 }

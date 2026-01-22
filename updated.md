@@ -278,3 +278,40 @@ Before you begin, make sure you have completed the following steps from the prev
    * POST /school/attendance (Requires 'admin' or 'teacher' role)
    * GET /school/marks (Requires 'admin', 'teacher', or 'student' role)
    * POST /school/marks (Requires 'admin' or 'teacher' role)
+
+Step 1: Create a Student
+
+  Send a POST request to http://localhost:4000/school/students with the following headers and body. I'm using the existing prashant user.
+
+   * Headers:
+       * Content-Type: application/json
+       * Authorization: Bearer <your_jwt_token> (Use a valid admin/teacher token)
+   * Body:
+
+   1     {
+   2       "roll_no": "STD101",
+   3       "user": {
+   4         "id": "3d1ed02b-1f5a-48c5-9441-cb024107b16e"
+   5       }
+   6     }
+
+  From the response, copy the `id` of the newly created student.
+
+  ---
+
+  Step 2: Create Marks for the New Student
+
+  Now, use the student id you just copied to create the marks. Send a POST request to http://localhost:4000/school/marks.
+
+   * Headers:
+       * Content-Type: application/json
+       * Authorization: Bearer <your_jwt_token>
+   * Body:
+
+   1     [
+   2       {
+   3         "subject": "Physics",
+   4         "marks": 95,
+   5         "student_id": "1"
+   6       }
+   7     ]

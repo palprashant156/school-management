@@ -61,8 +61,23 @@ export class SchoolService {
         return this.attendanceRepository.find({ relations: ['student'] });
     }
 
-    createAttendance(data: Partial<Attendance>) {
-        return this.attendanceRepository.save(data);
+    async createAttendance(data: (Partial<Attendance> & { student_id: string })[]) {
+        try {
+            const attendances = data.map(item => {
+                const attendance = new Attendance();
+                Object.assign(attendance, item);
+                const student = new Student();
+                student.id = parseInt(item.student_id, 10);
+                attendance.student = student;
+                return attendance;
+            });
+            return await this.attendanceRepository.save(attendances);
+        } catch (error) {
+            if (error.code === '23503') { // Foreign key violation
+                throw new ConflictException('One of the student IDs does not exist.');
+            }
+            throw new InternalServerErrorException(error);
+        }
     }
 
     // Marks
@@ -70,7 +85,22 @@ export class SchoolService {
         return this.markRepository.find({ relations: ['student'] });
     }
 
-    createMark(data: Partial<Mark>) {
-        return this.markRepository.save(data);
+    async createMark(data: (Partial<Mark> & { student_id: string })[]) {
+        try {
+            const marks = data.map(item => {
+                const mark = new Mark();
+                Object.assign(mark, item);
+                const student = new Student();
+                student.id = parseInt(item.student_id, 10);
+                mark.student = student;
+                return mark;
+            });
+            return await this.markRepository.save(marks);
+        } catch (error) {
+            if (error.code === '23503') { // Foreign key violation
+                throw new ConflictException('One of the student IDs does not exist.');
+            }
+            throw new InternalServerErrorException(error);
+        }
     }
 }

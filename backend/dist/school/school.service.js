@@ -63,14 +63,46 @@ let SchoolService = class SchoolService {
     findAllAttendance() {
         return this.attendanceRepository.find({ relations: ['student'] });
     }
-    createAttendance(data) {
-        return this.attendanceRepository.save(data);
+    async createAttendance(data) {
+        try {
+            const attendances = data.map(item => {
+                const attendance = new attendance_entity_1.Attendance();
+                Object.assign(attendance, item);
+                const student = new student_entity_1.Student();
+                student.id = parseInt(item.student_id, 10);
+                attendance.student = student;
+                return attendance;
+            });
+            return await this.attendanceRepository.save(attendances);
+        }
+        catch (error) {
+            if (error.code === '23503') {
+                throw new common_1.ConflictException('One of the student IDs does not exist.');
+            }
+            throw new common_1.InternalServerErrorException(error);
+        }
     }
     findAllMarks() {
         return this.markRepository.find({ relations: ['student'] });
     }
-    createMark(data) {
-        return this.markRepository.save(data);
+    async createMark(data) {
+        try {
+            const marks = data.map(item => {
+                const mark = new mark_entity_1.Mark();
+                Object.assign(mark, item);
+                const student = new student_entity_1.Student();
+                student.id = parseInt(item.student_id, 10);
+                mark.student = student;
+                return mark;
+            });
+            return await this.markRepository.save(marks);
+        }
+        catch (error) {
+            if (error.code === '23503') {
+                throw new common_1.ConflictException('One of the student IDs does not exist.');
+            }
+            throw new common_1.InternalServerErrorException(error);
+        }
     }
 };
 exports.SchoolService = SchoolService;

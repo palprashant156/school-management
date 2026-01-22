@@ -53,8 +53,11 @@ export class SchoolController {
 
     @Post('attendance')
     @Roles('admin', 'teacher') // Only Admin/Teacher can mark attendance
-    createAttendance(@Body() body: any) {
-        return this.schoolService.createAttendance(body);
+    createAttendance(@Body() body: any[]) {
+        if (Array.isArray(body)) {
+            return this.schoolService.createAttendance(body);
+        }
+        return this.schoolService.createAttendance([body]);
     }
 
     @Get('marks')
@@ -65,7 +68,10 @@ export class SchoolController {
 
     @Post('marks')
     @Roles('admin', 'teacher') // Only Admin/Teacher can assign marks
-    createMark(@Body() body: any) {
-        return this.schoolService.createMark(body);
+    createMark(@Body() body: any[]) {
+        if (Array.isArray(body)) {
+            return this.schoolService.createMark(body);
+        }
+        return this.schoolService.createMark([body]);
     }
 }

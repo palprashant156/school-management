@@ -45,13 +45,19 @@ let SchoolController = class SchoolController {
         return this.schoolService.findAllAttendance();
     }
     createAttendance(body) {
-        return this.schoolService.createAttendance(body);
+        if (Array.isArray(body)) {
+            return this.schoolService.createAttendance(body);
+        }
+        return this.schoolService.createAttendance([body]);
     }
     getAllMarks() {
         return this.schoolService.findAllMarks();
     }
     createMark(body) {
-        return this.schoolService.createMark(body);
+        if (Array.isArray(body)) {
+            return this.schoolService.createMark(body);
+        }
+        return this.schoolService.createMark([body]);
     }
 };
 exports.SchoolController = SchoolController;
@@ -112,7 +118,7 @@ __decorate([
     (0, roles_decorator_1.Roles)('admin', 'teacher'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Array]),
     __metadata("design:returntype", void 0)
 ], SchoolController.prototype, "createAttendance", null);
 __decorate([
@@ -127,7 +133,7 @@ __decorate([
     (0, roles_decorator_1.Roles)('admin', 'teacher'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Array]),
     __metadata("design:returntype", void 0)
 ], SchoolController.prototype, "createMark", null);
 exports.SchoolController = SchoolController = __decorate([
