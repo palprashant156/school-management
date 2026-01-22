@@ -10,7 +10,7 @@ import * as bcrypt from 'bcrypt';
 import { Role } from '../roles/role.entity';
 
 @Controller('users')
-//@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
     constructor(
         private readonly usersService: UsersService,

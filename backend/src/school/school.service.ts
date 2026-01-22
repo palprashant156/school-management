@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ConflictException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Class } from './class.entity';
@@ -27,8 +27,15 @@ export class SchoolService {
         return this.classRepository.find();
     }
 
-    createClass(data: Partial<Class>) {
-        return this.classRepository.save(data);
+    async createClass(data: Partial<Class>) {
+        try {
+            return await this.classRepository.save(data);
+        } catch (error) {
+            if (error.code === '23505') { // Postgres unique_violation code
+                throw new ConflictException('Class with this name already exists');
+            }
+            throw new InternalServerErrorException();
+        }
     }
 
     // Students

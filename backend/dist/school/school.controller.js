@@ -64,7 +64,7 @@ __decorate([
 ], SchoolController.prototype, "getAllClasses", null);
 __decorate([
     (0, common_1.Post)('classes'),
-    (0, roles_decorator_1.Roles)('admin', 'teacher'),
+    (0, roles_decorator_1.Roles)('admin'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),

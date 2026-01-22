@@ -16,7 +16,7 @@ export class SchoolController {
     }
 
     @Post('classes')
-    @Roles('admin', 'teacher') // Only Admin/Teacher can create
+    @Roles('admin') // Only Admin can create
     createClass(@Body() body: any) {
         return this.schoolService.createClass(body);
     }

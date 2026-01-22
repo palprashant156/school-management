@@ -2,12 +2,15 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { RolesService } from './roles/roles.service';
 import { PermissionsService } from './permissions/permissions.service';
 import { Permission } from './permissions/permission.entity';
+import { UsersService } from './users/users.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class SeedService implements OnModuleInit {
     constructor(
         private readonly rolesService: RolesService,
         private readonly permissionsService: PermissionsService,
+        private readonly usersService: UsersService,
     ) { }
 
     async onModuleInit() {
@@ -53,6 +56,34 @@ export class SeedService implements OnModuleInit {
 
                 await this.rolesService.create(roleName, rolePermissions);
                 console.log(`Created role: ${roleName}`);
+            }
+        }
+
+        // Seed Admin User
+        const adminEmail = 'admin@example.com';
+        const adminUser = await this.usersService.findOne(adminEmail);
+        if (!adminUser) {
+            console.log('Creating default admin user...');
+            const adminRole = await this.rolesService.findByName('admin');
+            if (adminRole) {
+                const hashedPassword = await bcrypt.hash('password123', 10);
+                await this.usersService.create({
+                    username: 'admin', // Keeping typical username
+                    email: adminEmail,
+                    password: hashedPassword,
+                    role: adminRole,
+                });
+                console.log('Created default admin user: admin@example.com / password123');
+            }
+        } else {
+            // Check if role is correct, if not update it
+            if (adminUser.role?.name !== 'admin') {
+                console.log('Fixing admin user role...');
+                const adminRole = await this.rolesService.findByName('admin');
+                if (adminRole) {
+                    await this.usersService.assignRole(adminUser.id, adminRole);
+                    console.log('Updated admin user role to admin');
+                }
             }
         }
     }

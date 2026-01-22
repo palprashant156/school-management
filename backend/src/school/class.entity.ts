@@ -5,7 +5,7 @@ export class Class {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column({ unique: true })
     class_name: string;
 
     @Column()

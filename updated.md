@@ -232,3 +232,49 @@ Before you begin, make sure you have completed the following steps from the prev
 
   By following these steps, you can be confident that the role-based access control for your attendance and marks features is implemented correctly and
   securely.
+
+
+
+
+
+  App
+
+   * GET /
+
+  Auth
+
+   * POST /auth/login
+   * POST /auth/register
+   * POST /auth/logout (Requires token)
+   * POST /auth/refresh (Requires refresh token)
+   * GET /auth/profile (Requires token)
+
+  Users
+
+   * POST /users (Requires 'admin' role)
+   * GET /users (Requires 'admin' role)
+   * GET /users/profile (Requires 'admin' or 'user' role)
+   * GET /users/:id (Requires 'admin' role)
+   * PATCH /users/:id (Requires 'admin' role)
+   * DELETE /users/:id (Requires 'admin' role)
+
+  Roles
+
+   * POST /roles (Requires 'admin' role)
+   * GET /roles (Requires 'admin' role)
+   * GET /roles/:id (Requires 'admin' role)
+   * PUT /roles/:id (Requires 'admin' role)
+   * DELETE /roles/:id (Requires 'admin' role)
+
+  School
+
+   * GET /school/classes (Requires 'admin', 'teacher', or 'student' role)
+   * POST /school/classes (Requires 'admin' role)
+   * GET /school/students (Requires 'admin' or 'teacher' role)
+   * POST /school/students (Requires 'admin' or 'teacher' role)
+   * GET /school/teachers (Requires 'admin' or 'teacher' role)
+   * POST /school/teachers (Requires 'admin' role)
+   * GET /school/attendance (Requires 'admin', 'teacher', or 'student' role)
+   * POST /school/attendance (Requires 'admin' or 'teacher' role)
+   * GET /school/marks (Requires 'admin', 'teacher', or 'student' role)
+   * POST /school/marks (Requires 'admin' or 'teacher' role)

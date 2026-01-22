@@ -37,8 +37,16 @@ let SchoolService = class SchoolService {
     findAllClasses() {
         return this.classRepository.find();
     }
-    createClass(data) {
-        return this.classRepository.save(data);
+    async createClass(data) {
+        try {
+            return await this.classRepository.save(data);
+        }
+        catch (error) {
+            if (error.code === '23505') {
+                throw new common_1.ConflictException('Class with this name already exists');
+            }
+            throw new common_1.InternalServerErrorException();
+        }
     }
     findAllStudents() {
         return this.studentRepository.find({ relations: ['class', 'user'] });
