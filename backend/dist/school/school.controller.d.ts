@@ -7,9 +7,10 @@ export declare class SchoolController {
     getAllStudents(): Promise<import("./student.entity").Student[]>;
     createStudent(body: any): Promise<Partial<import("./student.entity").Student> & import("./student.entity").Student>;
     getAllTeachers(): Promise<import("./teacher.entity").Teacher[]>;
-    createTeacher(body: any): Promise<Partial<import("./teacher.entity").Teacher> & import("./teacher.entity").Teacher>;
+    createTeacher(body: any): Promise<import("./teacher.entity").Teacher>;
     getAllAttendance(): Promise<import("./attendance.entity").Attendance[]>;
     createAttendance(body: any[]): Promise<import("./attendance.entity").Attendance[]>;
     getAllMarks(): Promise<import("./mark.entity").Mark[]>;
     createMark(body: any[]): Promise<import("./mark.entity").Mark[]>;
+    removeMark(id: string): Promise<import("./mark.entity").Mark>;
 }

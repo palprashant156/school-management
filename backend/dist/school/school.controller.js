@@ -59,6 +59,9 @@ let SchoolController = class SchoolController {
         }
         return this.schoolService.createMark([body]);
     }
+    removeMark(id) {
+        return this.schoolService.removeMark(+id);
+    }
 };
 exports.SchoolController = SchoolController;
 __decorate([
@@ -136,6 +139,14 @@ __decorate([
     __metadata("design:paramtypes", [Array]),
     __metadata("design:returntype", void 0)
 ], SchoolController.prototype, "createMark", null);
+__decorate([
+    (0, common_1.Delete)('marks/:id'),
+    (0, roles_decorator_1.Roles)('admin', 'teacher'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], SchoolController.prototype, "removeMark", null);
 exports.SchoolController = SchoolController = __decorate([
     (0, common_1.Controller)('school'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),

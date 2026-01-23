@@ -17,3 +17,4 @@ export class Mark {
     @JoinColumn({ name: 'student_id' })
     student: Student;
 }
+ 

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Delete, Param } from '@nestjs/common';
 import { SchoolService } from './school.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
@@ -73,5 +73,11 @@ export class SchoolController {
             return this.schoolService.createMark(body);
         }
         return this.schoolService.createMark([body]);
+    }
+
+    @Delete('marks/:id')
+    @Roles('admin', 'teacher')
+    removeMark(@Param('id') id: string) {
+        return this.schoolService.removeMark(+id);
     }
 }

@@ -1,4 +1,4 @@
-import { Injectable, ConflictException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, ConflictException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Class } from './class.entity';
@@ -6,6 +6,9 @@ import { Student } from './student.entity';
 import { Teacher } from './teacher.entity';
 import { Attendance } from './attendance.entity';
 import { Mark } from './mark.entity';
+import { UsersService } from '../users/users.service';
+import { RolesService } from '../roles/roles.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class SchoolService {
@@ -20,6 +23,8 @@ export class SchoolService {
         private attendanceRepository: Repository<Attendance>,
         @InjectRepository(Mark)
         private markRepository: Repository<Mark>,
+        private readonly usersService: UsersService,
+        private readonly rolesService: RolesService,
     ) { }
 
     // Classes
@@ -52,8 +57,43 @@ export class SchoolService {
         return this.teacherRepository.find({ relations: ['user'] });
     }
 
-    createTeacher(data: Partial<Teacher>) {
-        return this.teacherRepository.save(data);
+    async createTeacher(data: any) {
+        const { username, email, password, subject, firstName, lastName } = data;
+
+        if (!username || !email || !password || !subject || !firstName || !lastName) {
+            throw new ConflictException('Missing required fields: username, email, password, subject, firstName, lastName');
+        }
+
+        const teacherRole = await this.rolesService.findByName('teacher');
+        if (!teacherRole) {
+            throw new NotFoundException('"teacher" role not found. Please create it first.');
+        }
+
+        try {
+            // 1. Create the User
+            const hashedPassword = await bcrypt.hash(password, 10);
+            const newUser = await this.usersService.create({
+                username,
+                email,
+                password: hashedPassword,
+                firstName,
+                lastName,
+                role: teacherRole,
+            });
+
+            // 2. Create the Teacher
+            const teacher = new Teacher();
+            teacher.subject = subject;
+            teacher.user = newUser;
+
+            return await this.teacherRepository.save(teacher);
+        } catch (error) {
+            // Catch potential duplicate user/email errors from usersService
+            if (error.code === '23505') { // Postgres unique_violation
+                throw new ConflictException('Username or email already exists.');
+            }
+            throw new InternalServerErrorException(error);
+        }
     }
 
     // Attendance
@@ -102,5 +142,13 @@ export class SchoolService {
             }
             throw new InternalServerErrorException(error);
         }
+    }
+
+    async removeMark(id: number) {
+        const mark = await this.markRepository.findOne({ where: { id } });
+        if (!mark) {
+            throw new NotFoundException(`Mark with ID ${id} not found`);
+        }
+        return this.markRepository.remove(mark);
     }
 }

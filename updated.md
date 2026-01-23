@@ -315,3 +315,76 @@ Step 1: Create a Student
    5         "student_id": "1"
    6       }
    7     ]
+
+
+
+
+
+   Here's a breakdown of how to test the new teacher creation and mark deletion features in Postman.
+
+  Part 1: How to Test Teacher Creation
+
+  This test will create a new User with a 'teacher' role and a corresponding Teacher profile in one API call.
+
+   1. Get an Admin Token:
+       * First, you need a JWT from an admin user. You can get this by logging in via the POST http://localhost:4000/auth/login endpoint with an admin's
+         credentials. Copy the access_token from the response.
+
+   2. Set up the Request in Postman:
+       * Method: POST
+       * URL: http://localhost:4000/school/teachers
+
+   3. Configure Authorization:
+       * Go to the Authorization tab.
+       * Select Bearer Token from the Type dropdown.
+       * Paste the admin access_token you copied into the Token field on the right.
+
+   4. Configure the Body:
+       * Go to the Body tab.
+       * Select the raw radio button.
+       * Choose JSON from the dropdown that appears on the right.
+       * Paste the following JSON into the text area. Remember to use a unique username and email that doesn't already exist in your database.
+
+   1     {
+   2       "username": "new.teacher1",
+   3       "email": "new.teacher1@example.com",
+   4       "password": "password123",
+   5       "firstName": "John",
+   6       "lastName": "Doe",
+   7       "subject": "Physics"
+   8     }
+
+   5. Send the Request:
+       * Click the Send button.
+
+   6. Check the Response:
+       * You should receive a 201 Created status code.
+       * The response body will contain the details of the newly created teacher, linked to their new user profile.
+
+  ---
+
+  Part 2: How to Test Deleting a Mark
+
+  This test will delete a specific mark record from the database.
+
+   1. Get a Mark ID and a Token:
+       * First, you need the id of a mark you want to delete. You can get a list of all marks and their IDs by making a GET request to
+         http://localhost:4000/school/marks.
+       * You will also need a JWT from an admin or teacher user.
+
+   2. Set up the Request in Postman:
+       * Method: DELETE
+       * URL: http://localhost:4000/school/marks/:id
+       * Replace :id in the URL with the actual id of the mark you want to delete. For example: http://localhost:4000/school/marks/3
+
+   3. Configure Authorization:
+       * Go to the Authorization tab.
+       * Select Bearer Token and paste in your admin or teacher token.
+
+   4. Send the Request:
+       * Click the Send button. No request body is needed.
+
+   5. Check the Response:
+       * On Success: You should get a 200 OK status code, and the body will contain the data of the mark that was just deleted.
+       * If ID Doesn't Exist: If you try to delete a mark with an ID that isn't in the database, you should get a 404 Not Found status code and an error
+         message like "Mark with ID 3 not found".

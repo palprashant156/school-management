@@ -16,12 +16,14 @@ const attendance_entity_1 = require("./attendance.entity");
 const mark_entity_1 = require("./mark.entity");
 const school_service_1 = require("./school.service");
 const school_controller_1 = require("./school.controller");
+const users_module_1 = require("../users/users.module");
+const roles_module_1 = require("../roles/roles.module");
 let SchoolModule = class SchoolModule {
 };
 exports.SchoolModule = SchoolModule;
 exports.SchoolModule = SchoolModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([student_entity_1.Student, teacher_entity_1.Teacher, class_entity_1.Class, attendance_entity_1.Attendance, mark_entity_1.Mark])],
+        imports: [typeorm_1.TypeOrmModule.forFeature([student_entity_1.Student, teacher_entity_1.Teacher, class_entity_1.Class, attendance_entity_1.Attendance, mark_entity_1.Mark]), users_module_1.UsersModule, roles_module_1.RolesModule],
         controllers: [school_controller_1.SchoolController],
         providers: [school_service_1.SchoolService],
     })
