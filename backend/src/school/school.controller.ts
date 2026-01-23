@@ -4,6 +4,8 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 
+import { CreateStudentDto } from './dto/create-student.dto';
+
 @Controller('school')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class SchoolController {
@@ -29,8 +31,8 @@ export class SchoolController {
 
     @Post('students')
     @Roles('admin', 'teacher') // Only Admin/Teacher can create students
-    createStudent(@Body() body: any) {
-        return this.schoolService.createStudent(body);
+    createStudent(@Body() createStudentDto: CreateStudentDto) {
+        return this.schoolService.createStudent(createStudentDto);
     }
 
     @Get('teachers')

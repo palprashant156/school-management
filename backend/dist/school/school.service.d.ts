@@ -6,6 +6,7 @@ import { Attendance } from './attendance.entity';
 import { Mark } from './mark.entity';
 import { UsersService } from '../users/users.service';
 import { RolesService } from '../roles/roles.service';
+import { CreateStudentDto } from './dto/create-student.dto';
 export declare class SchoolService {
     private classRepository;
     private studentRepository;
@@ -18,7 +19,7 @@ export declare class SchoolService {
     findAllClasses(): Promise<Class[]>;
     createClass(data: Partial<Class>): Promise<Partial<Class> & Class>;
     findAllStudents(): Promise<Student[]>;
-    createStudent(data: Partial<Student>): Promise<Partial<Student> & Student>;
+    createStudent(createStudentDto: CreateStudentDto): Promise<Student>;
     findAllTeachers(): Promise<Teacher[]>;
     createTeacher(data: any): Promise<Teacher>;
     findAllAttendance(): Promise<Attendance[]>;

@@ -18,6 +18,7 @@ const school_service_1 = require("./school.service");
 const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 const roles_guard_1 = require("../auth/roles.guard");
 const roles_decorator_1 = require("../auth/roles.decorator");
+const create_student_dto_1 = require("./dto/create-student.dto");
 let SchoolController = class SchoolController {
     schoolService;
     constructor(schoolService) {
@@ -32,8 +33,8 @@ let SchoolController = class SchoolController {
     getAllStudents() {
         return this.schoolService.findAllStudents();
     }
-    createStudent(body) {
-        return this.schoolService.createStudent(body);
+    createStudent(createStudentDto) {
+        return this.schoolService.createStudent(createStudentDto);
     }
     getAllTeachers() {
         return this.schoolService.findAllTeachers();
@@ -91,7 +92,7 @@ __decorate([
     (0, roles_decorator_1.Roles)('admin', 'teacher'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [create_student_dto_1.CreateStudentDto]),
     __metadata("design:returntype", void 0)
 ], SchoolController.prototype, "createStudent", null);
 __decorate([

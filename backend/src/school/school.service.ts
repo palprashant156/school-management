@@ -10,6 +10,8 @@ import { UsersService } from '../users/users.service';
 import { RolesService } from '../roles/roles.service';
 import * as bcrypt from 'bcrypt';
 
+import { CreateStudentDto } from './dto/create-student.dto';
+
 @Injectable()
 export class SchoolService {
     constructor(
@@ -48,14 +50,52 @@ export class SchoolService {
         return this.studentRepository.find({ relations: ['class', 'user'] });
     }
 
-    createStudent(data: Partial<Student>) {
-        return this.studentRepository.save(data);
+    async createStudent(createStudentDto: CreateStudentDto) {
+        const { username, email, firstName, lastName, roll_no, classId } = createStudentDto;
+
+        const studentRole = await this.rolesService.findByName('student');
+        if (!studentRole) {
+            throw new NotFoundException('"student" role not found. Please create it first.');
+        }
+
+        const studentClass = await this.classRepository.findOne({ where: { id: parseInt(classId, 10) } });
+        if (!studentClass) {
+            throw new NotFoundException(`Class with ID ${classId} not found.`);
+        }
+
+        try {
+            // 1. Create the User
+            const randomPassword = Math.random().toString(36).slice(-8); // Generate a random password
+            const hashedPassword = await bcrypt.hash(randomPassword, 10);
+            const newUser = await this.usersService.create({
+                username,
+                email,
+                password: hashedPassword,
+                firstName,
+                lastName,
+                role: studentRole,
+            });
+
+            // 2. Create the Student
+            const student = new Student();
+            student.roll_no = roll_no;
+            student.user = newUser;
+            student.class = studentClass;
+
+            return await this.studentRepository.save(student);
+        } catch (error) {
+            if (error.code === '23505') {
+                throw new ConflictException('Username or email already exists.');
+            }
+            throw new InternalServerErrorException(error);
+        }
     }
 
     // Teachers
     findAllTeachers() {
         return this.teacherRepository.find({ relations: ['user'] });
     }
+
 
     async createTeacher(data: any) {
         const { username, email, password, subject, firstName, lastName } = data;

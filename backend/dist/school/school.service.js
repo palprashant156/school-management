@@ -91,8 +91,39 @@ let SchoolService = class SchoolService {
     findAllStudents() {
         return this.studentRepository.find({ relations: ['class', 'user'] });
     }
-    createStudent(data) {
-        return this.studentRepository.save(data);
+    async createStudent(createStudentDto) {
+        const { username, email, firstName, lastName, roll_no, classId } = createStudentDto;
+        const studentRole = await this.rolesService.findByName('student');
+        if (!studentRole) {
+            throw new common_1.NotFoundException('"student" role not found. Please create it first.');
+        }
+        const studentClass = await this.classRepository.findOne({ where: { id: parseInt(classId, 10) } });
+        if (!studentClass) {
+            throw new common_1.NotFoundException(`Class with ID ${classId} not found.`);
+        }
+        try {
+            const randomPassword = Math.random().toString(36).slice(-8);
+            const hashedPassword = await bcrypt.hash(randomPassword, 10);
+            const newUser = await this.usersService.create({
+                username,
+                email,
+                password: hashedPassword,
+                firstName,
+                lastName,
+                role: studentRole,
+            });
+            const student = new student_entity_1.Student();
+            student.roll_no = roll_no;
+            student.user = newUser;
+            student.class = studentClass;
+            return await this.studentRepository.save(student);
+        }
+        catch (error) {
+            if (error.code === '23505') {
+                throw new common_1.ConflictException('Username or email already exists.');
+            }
+            throw new common_1.InternalServerErrorException(error);
+        }
     }
     findAllTeachers() {
         return this.teacherRepository.find({ relations: ['user'] });
