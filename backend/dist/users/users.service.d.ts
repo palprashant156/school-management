@@ -4,7 +4,7 @@ import { Role } from '../roles/role.entity';
 export declare class UsersService {
     private usersRepository;
     constructor(usersRepository: Repository<User>);
-    findOne(username: string): Promise<User | null>;
+    findOne(email: string): Promise<User | null>;
     create(userData: Partial<User>): Promise<User>;
     findOneById(id: string): Promise<User | null>;
     findAll(): Promise<User[]>;

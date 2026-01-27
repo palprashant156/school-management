@@ -1,101 +1,236 @@
 'use client';
 
+// =============================================================================
+// ROLE-BASED SIDEBAR NAVIGATION
+// =============================================================================
+// This component renders a responsive sidebar with navigation items
+// filtered based on the user's role (admin, teacher, student)
+// =============================================================================
+
+import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { UserRole } from '@/types';
+import {
+    LayoutDashboard,
+    Users,
+    GraduationCap,
+    UserCog,
+    BookOpen,
+    ClipboardCheck,
+    FileSpreadsheet,
+    Settings,
+    LogOut,
+    School,
+    ChevronLeft,
+    Menu,
+    Shield,
+} from 'lucide-react';
 
-const menuItems = [
-    { name: 'User Management', href: '/dashboard', icon: 'UserGroup', roles: ['admin'] },
-    { name: 'Roles & Permissions', href: '/dashboard/roles', icon: 'ShieldCheck', roles: ['admin'] },
-    { name: 'Classes', href: '/dashboard/classes', icon: 'AcademicCap', roles: ['admin', 'teacher', 'student'] },
-    { name: 'Students', href: '/dashboard/students', icon: 'User', roles: ['admin', 'teacher'] },
-    { name: 'Teachers', href: '/dashboard/teachers', icon: 'Users', roles: ['admin', 'teacher'] },
-    { name: 'Attendance', href: '/dashboard/attendance', icon: 'Calendar', roles: ['admin', 'teacher', 'student'] },
-    { name: 'Marks', href: '/dashboard/marks', icon: 'Clipboard', roles: ['admin', 'teacher', 'student'] },
-    { name: 'Profile', href: '/dashboard/profile', icon: 'UserCircle', roles: ['admin', 'teacher', 'student'] },
+// -----------------------------------------------------------------------------
+// Types
+// -----------------------------------------------------------------------------
+
+interface NavItem {
+    label: string;
+    href: string;
+    icon: React.ReactNode;
+    roles: UserRole[]; // Which roles can see this item
+}
+
+interface SidebarProps {
+    isCollapsed?: boolean;
+    onToggle?: () => void;
+}
+
+// -----------------------------------------------------------------------------
+// Navigation Configuration
+// -----------------------------------------------------------------------------
+
+const navItems: NavItem[] = [
+    {
+        label: 'Dashboard',
+        href: '/dashboard',
+        icon: <LayoutDashboard size={20} />,
+        roles: ['admin', 'teacher', 'student'],
+    },
+    {
+        label: 'Users',
+        href: '/dashboard/users',
+        icon: <Users size={20} />,
+        roles: ['admin'],
+    },
+    {
+        label: 'Roles',
+        href: '/dashboard/roles',
+        icon: <Shield size={20} />,
+        roles: ['admin'],
+    },
+    {
+        label: 'Classes',
+        href: '/dashboard/classes',
+        icon: <School size={20} />,
+        roles: ['admin', 'teacher'],
+    },
+    {
+        label: 'Students',
+        href: '/dashboard/students',
+        icon: <GraduationCap size={20} />,
+        roles: ['admin', 'teacher'],
+    },
+    {
+        label: 'Teachers',
+        href: '/dashboard/teachers',
+        icon: <UserCog size={20} />,
+        roles: ['admin'],
+    },
+    {
+        label: 'My Classes',
+        href: '/dashboard/my-classes',
+        icon: <BookOpen size={20} />,
+        roles: ['student'],
+    },
+    {
+        label: 'Attendance',
+        href: '/dashboard/attendance',
+        icon: <ClipboardCheck size={20} />,
+        roles: ['admin', 'teacher', 'student'],
+    },
+    {
+        label: 'Marks',
+        href: '/dashboard/marks',
+        icon: <FileSpreadsheet size={20} />,
+        roles: ['admin', 'teacher', 'student'],
+    },
+    {
+        label: 'Settings',
+        href: '/dashboard/settings',
+        icon: <Settings size={20} />,
+        roles: ['admin', 'teacher', 'student'],
+    },
 ];
 
-export default function Sidebar() {
+// -----------------------------------------------------------------------------
+// Sidebar Component
+// -----------------------------------------------------------------------------
+
+export function Sidebar({ isCollapsed = false, onToggle }: SidebarProps) {
     const pathname = usePathname();
     const { user, logout } = useAuth();
 
+    // Helper to extract role name from union type
+    const getRoleName = (role: unknown): UserRole | undefined => {
+        if (!role) return undefined;
+        if (typeof role === 'string') return role as UserRole;
+        if (typeof role === 'object' && role !== null && 'name' in role) {
+            return (role as { name: string }).name as UserRole;
+        }
+        return undefined;
+    };
+
+    // Filter navigation items based on user role
+    const userRole = getRoleName(user?.role);
+    const filteredNavItems = navItems.filter((item) => {
+        if (!userRole) return false;
+        return item.roles.includes(userRole);
+    });
+
+    // Check if a nav item is active
+    const isActive = (href: string) => {
+        if (href === '/dashboard') {
+            return pathname === '/dashboard';
+        }
+        return pathname.startsWith(href);
+    };
+
     return (
-        <div className="w-64 bg-white border-r border-gray-200 min-h-screen flex flex-col">
-            <div className="p-6 border-b border-gray-100">
-                <h1 className="text-xl font-bold text-gray-900">School Management</h1>
-                <p className="text-sm text-gray-400 mt-1">Admin Portal</p>
+        <aside
+            className={`
+        fixed left-0 top-0 z-40 h-screen
+        transition-all duration-300 ease-in-out
+        ${isCollapsed ? 'w-20' : 'w-64'}
+      `}
+            style={{ background: 'var(--sidebar-bg)' }}
+        >
+            {/* Logo & Toggle */}
+            <div className="flex h-16 items-center justify-between px-4 border-b border-white/10">
+                {!isCollapsed && (
+                    <Link href="/dashboard" className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-lg gradient-primary flex items-center justify-center">
+                            <School size={18} className="text-white" />
+                        </div>
+                        <span className="text-lg font-semibold text-white">EduManage</span>
+                    </Link>
+                )}
+
+                <button
+                    onClick={onToggle}
+                    className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+                    style={{ color: 'var(--sidebar-text)' }}
+                    aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                >
+                    {isCollapsed ? <Menu size={20} /> : <ChevronLeft size={20} />}
+                </button>
             </div>
 
-            <div className="p-6 border-b border-gray-100 bg-indigo-50/50">
-                <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center text-white text-lg font-bold shadow-sm">
-                        {user?.username?.[0]?.toUpperCase() || 'A'}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-gray-900 truncate">{user?.username || 'Admin User'}</div>
-                        <div className="text-xs text-gray-500 truncate">{user?.email || 'admin@school.edu'}</div>
-                    </div>
-                </div>
-                <div className="mt-4">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 capitalize">
-                        {user?.role || 'Admin'}
-                    </span>
-                </div>
-            </div>
+            {/* Navigation Links */}
+            <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+                {filteredNavItems.map((item) => {
+                    const active = isActive(item.href);
 
-            <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-                {menuItems.filter(item => item.roles.includes(user?.role || '')).map((item) => {
-                    const isActive = pathname === item.href;
                     return (
                         <Link
-                            key={item.name}
+                            key={item.href}
                             href={item.href}
-                            className={`flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group ${isActive
-                                ? 'bg-indigo-50 text-indigo-600 shadow-sm'
-                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                                }`}
+                            className={`
+                flex items-center gap-3 px-3 py-2.5 rounded-lg
+                transition-all duration-200 group
+                ${active
+                                    ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/30'
+                                    : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                                }
+              `}
+                            title={isCollapsed ? item.label : undefined}
                         >
-                            <span className={`mr-3 transition-colors ${isActive ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-600'}`}>
-                                {item.icon === 'UserGroup' && (
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                                )}
-                                {item.icon === 'ShieldCheck' && (
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-                                )}
-                                {item.icon === 'AcademicCap' && (
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" /></svg>
-                                )}
-                                {item.icon === 'User' && (
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                                )}
-                                {item.icon === 'Users' && (
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                                )}
-                                {item.icon === 'Calendar' && (
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                )}
-                                {item.icon === 'Clipboard' && (
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
-                                )}
-                                {item.icon === 'UserCircle' && (
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                )}
+                            <span className={`flex-shrink-0 ${active ? 'text-white' : 'text-slate-400 group-hover:text-white'}`}>
+                                {item.icon}
                             </span>
-                            {item.name}
+                            {!isCollapsed && (
+                                <span className="font-medium text-sm">{item.label}</span>
+                            )}
                         </Link>
                     );
                 })}
             </nav>
 
-            <div className="p-4 m-4 border-t border-gray-100">
+            {/* User Profile & Logout */}
+            <div className="border-t border-white/10 p-4">
+                {/* User Info */}
+                {user && !isCollapsed && (
+                    <div className="mb-3 px-2">
+                        <p className="text-sm font-medium text-white truncate">{user.name}</p>
+                        <p className="text-xs text-slate-400 truncate">{user.email}</p>
+                        <span className="inline-block mt-1 px-2 py-0.5 text-xs font-medium rounded-full bg-primary-600/20 text-primary-300 capitalize">
+                            {getRoleName(user.role) || 'user'}
+                        </span>
+                    </div>
+                )}
+
+                {/* Logout Button */}
                 <button
                     onClick={logout}
-                    className="w-full flex items-center px-4 py-3 text-sm font-medium text-gray-600 rounded-xl hover:bg-red-50 hover:text-red-600 transition-colors group"
+                    className={`
+            w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
+            text-slate-300 hover:bg-red-500/20 hover:text-red-400
+            transition-all duration-200
+          `}
+                    title={isCollapsed ? 'Logout' : undefined}
                 >
-                    <svg className="w-5 h-5 mr-3 text-gray-400 group-hover:text-red-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-                    Logout
+                    <LogOut size={20} className="flex-shrink-0" />
+                    {!isCollapsed && <span className="font-medium text-sm">Logout</span>}
                 </button>
             </div>
-        </div>
+        </aside>
     );
 }

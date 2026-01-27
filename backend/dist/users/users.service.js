@@ -56,8 +56,8 @@ let UsersService = class UsersService {
     constructor(usersRepository) {
         this.usersRepository = usersRepository;
     }
-    async findOne(username) {
-        return this.usersRepository.findOne({ where: { username }, relations: ['role'] });
+    async findOne(email) {
+        return this.usersRepository.findOne({ where: { email }, relations: ['role'] });
     }
     async create(userData) {
         try {

@@ -1,84 +1,203 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { jwtDecode } from 'jwt-decode';
-import api from '../lib/api';
-import { useRouter } from 'next/navigation';
+// =============================================================================
+// AUTHENTICATION CONTEXT PROVIDER
+// =============================================================================
+// This context provides global authentication state and methods:
+// - User information and role
+// - JWT token management
+// - Login/Logout functionality
+// - Protected route handling
+// =============================================================================
 
-interface User {
-    id: string;
-    username: string;
-    email: string;
-    role: string;
-}
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import api, { getToken, setToken, removeToken } from '@/lib/api';
+import { User, LoginCredentials, RegisterCredentials, AuthResponse } from '@/types';
+
+// -----------------------------------------------------------------------------
+// Context Types
+// -----------------------------------------------------------------------------
 
 interface AuthContextType {
     user: User | null;
-    login: (email: string, pass: string) => Promise<void>;
-    logout: () => void;
+    token: string | null;
     isAuthenticated: boolean;
-    loading: boolean;
+    isLoading: boolean;
+    login: (credentials: LoginCredentials) => Promise<void>;
+    register: (credentials: RegisterCredentials) => Promise<void>;
+    logout: () => void;
+    refreshUser: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType>({
-    user: null,
-    login: async () => { },
-    logout: () => { },
-    isAuthenticated: false,
-    loading: true,
-});
+// -----------------------------------------------------------------------------
+// Context Creation
+// -----------------------------------------------------------------------------
 
-export const useAuth = () => useContext(AuthContext);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+// -----------------------------------------------------------------------------
+// Auth Provider Component
+// -----------------------------------------------------------------------------
+
+interface AuthProviderProps {
+    children: React.ReactNode;
+}
+
+export function AuthProvider({ children }: AuthProviderProps) {
     const [user, setUser] = useState<User | null>(null);
-    const [loading, setLoading] = useState(true);
-    const router = useRouter();
+    const [token, setTokenState] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Computed authentication state
+    const isAuthenticated = !!token && !!user;
+
+    // ---------------------------------------------------------------------------
+    // Fetch Current User Profile
+    // ---------------------------------------------------------------------------
+
+    const refreshUser = useCallback(async () => {
+        try {
+            const response = await api.get<User>('/auth/profile');
+            setUser(response.data);
+        } catch (error) {
+            console.error('Failed to fetch user profile:', error);
+            // If profile fetch fails, clear authentication
+            removeToken();
+            setTokenState(null);
+            setUser(null);
+        }
+    }, []);
+
+    // ---------------------------------------------------------------------------
+    // Initialize Auth State on Mount
+    // ---------------------------------------------------------------------------
 
     useEffect(() => {
         const initAuth = async () => {
-            const token = localStorage.getItem('access_token');
-            if (token) {
-                try {
-                    const decoded: any = jwtDecode(token);
-                    // Check expiry if needed, but interceptor handles 401
-                    setUser({ id: decoded.sub, username: decoded.username, role: decoded.role, email: decoded.email });
-                } catch (e) {
-                    console.error("Invalid token", e);
-                    localStorage.removeItem('access_token');
-                    localStorage.removeItem('refresh_token');
-                }
+            const storedToken = getToken();
+
+            if (storedToken) {
+                setTokenState(storedToken);
+                await refreshUser();
             }
-            setLoading(false);
+
+            setIsLoading(false);
         };
 
         initAuth();
-    }, []);
+    }, [refreshUser]);
 
-    const login = async (email: string, pass: string) => {
+    // ---------------------------------------------------------------------------
+    // Login Function
+    // ---------------------------------------------------------------------------
+
+    const login = async (credentials: LoginCredentials): Promise<void> => {
+        setIsLoading(true);
+
         try {
-            const { data } = await api.post('/auth/login', { username: email, password: pass });
-            localStorage.setItem('access_token', data.access_token);
-            localStorage.setItem('refresh_token', data.refresh_token);
-            const decoded: any = jwtDecode(data.access_token);
-            setUser({ id: decoded.sub, username: decoded.username, role: decoded.role, email: decoded.email });
-            router.push('/dashboard');
+            const response = await api.post<AuthResponse>('/auth/login', credentials);
+            const { access_token, user: userData } = response.data;
+
+            // Store token in localStorage and state
+            setToken(access_token);
+            setTokenState(access_token);
+
+            // If user data is included in response, use it; otherwise fetch profile
+            if (userData) {
+                setUser(userData);
+            } else {
+                await refreshUser();
+            }
         } catch (error) {
-            console.error('Login failed', error);
+            // Re-throw to let the component handle the error
             throw error;
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    const logout = () => {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
+    // ---------------------------------------------------------------------------
+    // Register Function
+    // ---------------------------------------------------------------------------
+
+    const register = async (credentials: RegisterCredentials): Promise<void> => {
+        setIsLoading(true);
+
+        try {
+            const response = await api.post<AuthResponse>('/auth/register', credentials);
+            const { access_token, user: userData } = response.data;
+
+            // Store token if registration auto-logs in the user
+            if (access_token) {
+                setToken(access_token);
+                setTokenState(access_token);
+
+                if (userData) {
+                    setUser(userData);
+                } else {
+                    await refreshUser();
+                }
+            }
+        } catch (error) {
+            throw error;
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // ---------------------------------------------------------------------------
+    // Logout Function
+    // ---------------------------------------------------------------------------
+
+    const logout = (): void => {
+        removeToken();
+        setTokenState(null);
         setUser(null);
-        router.push('/login');
+
+        // Redirect to login page
+        if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+        }
+    };
+
+    // ---------------------------------------------------------------------------
+    // Context Value
+    // ---------------------------------------------------------------------------
+
+    const value: AuthContextType = {
+        user,
+        token,
+        isAuthenticated,
+        isLoading,
+        login,
+        register,
+        logout,
+        refreshUser,
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user, loading }}>
+        <AuthContext.Provider value={value}>
             {children}
         </AuthContext.Provider>
     );
-};
+}
+
+// -----------------------------------------------------------------------------
+// Custom Hook for using Auth Context
+// -----------------------------------------------------------------------------
+
+export function useAuth(): AuthContextType {
+    const context = useContext(AuthContext);
+
+    if (context === undefined) {
+        throw new Error('useAuth must be used within an AuthProvider');
+    }
+
+    return context;
+}
+
+// -----------------------------------------------------------------------------
+// Export Context (for testing purposes)
+// -----------------------------------------------------------------------------
+
+export { AuthContext };

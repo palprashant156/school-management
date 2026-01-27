@@ -48,8 +48,15 @@ export class AuthService {
   async register(createUserDto: any) {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
     const userRole = await this.rolesService.findByName('user');
+
+    // Handle firstName and lastName - extract from username if not provided
+    const firstName = createUserDto.firstName || createUserDto.username?.split(' ')[0] || 'User';
+    const lastName = createUserDto.lastName || createUserDto.username?.split(' ').slice(1).join(' ') || '';
+
     return this.usersService.create({
       ...createUserDto,
+      firstName,
+      lastName,
       password: hashedPassword,
       role: userRole,
     });
