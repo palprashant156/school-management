@@ -46,12 +46,22 @@ export default function MarksPage() {
     const subjects = ['Mathematics', 'Science', 'English', 'History', 'Geography', 'Physics', 'Chemistry', 'Biology'];
     const examTypes = ['Unit Test', 'Mid-Term', 'Final Exam', 'Quiz', 'Assignment'];
 
-    // Helper to get display name from student
+    // Helper to get display name from student (data comes from user relation)
     const getStudentName = (student: Student): string => {
+        // Check user relation first (backend stores name in user entity)
+        if (student.user?.firstName && student.user?.lastName) {
+            return `${student.user.firstName} ${student.user.lastName}`;
+        }
+        // Fallback to direct properties
         if (student.firstName && student.lastName) {
             return `${student.firstName} ${student.lastName}`;
         }
-        return student.name || student.username || 'Unknown';
+        return student.name || student.user?.username || student.username || 'Unknown';
+    };
+
+    // Helper to get student email from user relation
+    const getStudentEmail = (student: Student): string => {
+        return student.email || student.user?.email || '';
     };
 
     // ---------------------------------------------------------------------------
@@ -397,13 +407,13 @@ export default function MarksPage() {
                                                                     {getStudentName(student)}
                                                                 </p>
                                                                 <p className="text-sm" style={{ color: 'var(--foreground-muted)' }}>
-                                                                    {student.email || ''}
+                                                                    {getStudentEmail(student)}
                                                                 </p>
                                                             </div>
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4" style={{ color: 'var(--foreground)' }}>
-                                                        {student.rollNumber || '-'}
+                                                        {student.roll_no || student.rollNumber || '-'}
                                                     </td>
                                                     <td className="px-6 py-4">
                                                         <div className="flex justify-center">

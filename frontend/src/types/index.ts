@@ -79,12 +79,19 @@ export interface Student {
     firstName?: string;
     lastName?: string;
     username?: string;
-    email: string;
+    email?: string;
     rollNumber?: string;
     roll_no?: string;
     classId?: number;
     class?: Class;
     userId?: number;
+    user?: {
+        id: number;
+        email: string;
+        firstName?: string;
+        lastName?: string;
+        username?: string;
+    };
     createdAt?: string;
     updatedAt?: string;
 }
