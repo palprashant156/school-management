@@ -218,7 +218,7 @@ export default function AttendancePage() {
                                 <option value="">Choose a class</option>
                                 {classes.map((cls) => (
                                     <option key={cls.id} value={cls.id}>
-                                        {cls.name} {cls.section ? `- ${cls.section}` : ''}
+                                        {cls.class_name || cls.name || 'Unnamed'} {cls.section ? `- ${cls.section}` : ''}
                                     </option>
                                 ))}
                             </select>

@@ -57,6 +57,11 @@ export default function ClassesPage() {
     const itemsPerPage = 10;
     const isAdmin = user?.role === 'admin';
 
+    // Helper to get class name (backend uses class_name)
+    const getClassName = (cls: Class): string => {
+        return cls.class_name || cls.name || 'Unnamed Class';
+    };
+
     // ---------------------------------------------------------------------------
     // Fetch Data
     // ---------------------------------------------------------------------------
@@ -91,9 +96,13 @@ export default function ClassesPage() {
     // ---------------------------------------------------------------------------
 
     const filteredClasses = classes.filter(
-        (cls) =>
-            cls.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            cls.section?.toLowerCase().includes(searchQuery.toLowerCase())
+        (cls) => {
+            const className = getClassName(cls);
+            return (
+                className.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                cls.section?.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+        }
     );
 
     const totalPages = Math.ceil(filteredClasses.length / itemsPerPage);
@@ -116,7 +125,7 @@ export default function ClassesPage() {
     const openEditModal = (cls: Class) => {
         setEditingClass(cls);
         setFormData({
-            name: cls.name,
+            name: getClassName(cls),
             section: cls.section || '',
             teacherId: cls.teacherId?.toString() || '',
         });
@@ -142,7 +151,7 @@ export default function ClassesPage() {
 
         try {
             const payload = {
-                name: formData.name,
+                class_name: formData.name,
                 section: formData.section || undefined,
                 teacherId: formData.teacherId ? parseInt(formData.teacherId) : undefined,
             };
@@ -285,10 +294,10 @@ export default function ClassesPage() {
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
                                                         <div className="h-10 w-10 rounded-full flex items-center justify-center text-white font-medium gradient-primary">
-                                                            {(cls.name || 'C').charAt(0).toUpperCase()}
+                                                            {getClassName(cls).charAt(0).toUpperCase()}
                                                         </div>
                                                         <span className="font-medium" style={{ color: 'var(--foreground)' }}>
-                                                            {cls.name || 'Unnamed Class'}
+                                                            {getClassName(cls)}
                                                         </span>
                                                     </div>
                                                 </td>

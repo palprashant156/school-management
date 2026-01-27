@@ -82,4 +82,22 @@ export class SchoolController {
     removeMark(@Param('id') id: string) {
         return this.schoolService.removeMark(+id);
     }
+
+    @Delete('classes/:id')
+    @Roles('admin')
+    removeClass(@Param('id') id: string) {
+        return this.schoolService.removeClass(+id);
+    }
+
+    @Delete('students/:id')
+    @Roles('admin', 'teacher')
+    removeStudent(@Param('id') id: string) {
+        return this.schoolService.removeStudent(+id);
+    }
+
+    @Delete('teachers/:id')
+    @Roles('admin')
+    removeTeacher(@Param('id') id: string) {
+        return this.schoolService.removeTeacher(+id);
+    }
 }

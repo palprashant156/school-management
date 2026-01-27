@@ -14,4 +14,7 @@ export declare class SchoolController {
     getAllMarks(): Promise<import("./mark.entity").Mark[]>;
     createMark(body: any[]): Promise<import("./mark.entity").Mark[]>;
     removeMark(id: string): Promise<import("./mark.entity").Mark>;
+    removeClass(id: string): Promise<import("./class.entity").Class>;
+    removeStudent(id: string): Promise<import("./student.entity").Student>;
+    removeTeacher(id: string): Promise<import("./teacher.entity").Teacher>;
 }

@@ -31,7 +31,7 @@ export class SchoolService {
 
     // Classes
     findAllClasses() {
-        return this.classRepository.find();
+        return this.classRepository.find({ relations: ['students'] });
     }
 
     async createClass(data: Partial<Class>) {
@@ -190,5 +190,29 @@ export class SchoolService {
             throw new NotFoundException(`Mark with ID ${id} not found`);
         }
         return this.markRepository.remove(mark);
+    }
+
+    async removeClass(id: number) {
+        const classEntity = await this.classRepository.findOne({ where: { id } });
+        if (!classEntity) {
+            throw new NotFoundException(`Class with ID ${id} not found`);
+        }
+        return this.classRepository.remove(classEntity);
+    }
+
+    async removeStudent(id: number) {
+        const student = await this.studentRepository.findOne({ where: { id } });
+        if (!student) {
+            throw new NotFoundException(`Student with ID ${id} not found`);
+        }
+        return this.studentRepository.remove(student);
+    }
+
+    async removeTeacher(id: number) {
+        const teacher = await this.teacherRepository.findOne({ where: { id } });
+        if (!teacher) {
+            throw new NotFoundException(`Teacher with ID ${id} not found`);
+        }
+        return this.teacherRepository.remove(teacher);
     }
 }

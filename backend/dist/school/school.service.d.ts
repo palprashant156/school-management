@@ -31,4 +31,7 @@ export declare class SchoolService {
         student_id: string;
     })[]): Promise<Mark[]>;
     removeMark(id: number): Promise<Mark>;
+    removeClass(id: number): Promise<Class>;
+    removeStudent(id: number): Promise<Student>;
+    removeTeacher(id: number): Promise<Teacher>;
 }

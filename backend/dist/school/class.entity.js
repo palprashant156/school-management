@@ -11,10 +11,12 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Class = void 0;
 const typeorm_1 = require("typeorm");
+const student_entity_1 = require("./student.entity");
 let Class = class Class {
     id;
     class_name;
     section;
+    students;
 };
 exports.Class = Class;
 __decorate([
@@ -29,6 +31,10 @@ __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], Class.prototype, "section", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => student_entity_1.Student, (student) => student.class),
+    __metadata("design:type", Array)
+], Class.prototype, "students", void 0);
 exports.Class = Class = __decorate([
     (0, typeorm_1.Entity)({ name: 'classes' })
 ], Class);

@@ -75,7 +75,7 @@ let SchoolService = class SchoolService {
         this.rolesService = rolesService;
     }
     findAllClasses() {
-        return this.classRepository.find();
+        return this.classRepository.find({ relations: ['students'] });
     }
     async createClass(data) {
         try {
@@ -209,6 +209,27 @@ let SchoolService = class SchoolService {
             throw new common_1.NotFoundException(`Mark with ID ${id} not found`);
         }
         return this.markRepository.remove(mark);
+    }
+    async removeClass(id) {
+        const classEntity = await this.classRepository.findOne({ where: { id } });
+        if (!classEntity) {
+            throw new common_1.NotFoundException(`Class with ID ${id} not found`);
+        }
+        return this.classRepository.remove(classEntity);
+    }
+    async removeStudent(id) {
+        const student = await this.studentRepository.findOne({ where: { id } });
+        if (!student) {
+            throw new common_1.NotFoundException(`Student with ID ${id} not found`);
+        }
+        return this.studentRepository.remove(student);
+    }
+    async removeTeacher(id) {
+        const teacher = await this.teacherRepository.findOne({ where: { id } });
+        if (!teacher) {
+            throw new common_1.NotFoundException(`Teacher with ID ${id} not found`);
+        }
+        return this.teacherRepository.remove(teacher);
     }
 };
 exports.SchoolService = SchoolService;

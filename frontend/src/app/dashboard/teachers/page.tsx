@@ -56,6 +56,19 @@ export default function TeachersPage() {
     const itemsPerPage = 10;
     const isAdmin = user?.role === 'admin';
 
+    // Helper to get teacher name from user relation
+    const getTeacherName = (teacher: Teacher): string => {
+        if (teacher.user?.firstName && teacher.user?.lastName) {
+            return `${teacher.user.firstName} ${teacher.user.lastName}`;
+        }
+        return teacher.name || teacher.user?.username || 'Unknown Teacher';
+    };
+
+    // Helper to get teacher email from user relation
+    const getTeacherEmail = (teacher: Teacher): string => {
+        return teacher.email || teacher.user?.email || '';
+    };
+
     // ---------------------------------------------------------------------------
     // Fetch Data
     // ---------------------------------------------------------------------------
@@ -80,10 +93,15 @@ export default function TeachersPage() {
     // ---------------------------------------------------------------------------
 
     const filteredTeachers = teachers.filter(
-        (teacher) =>
-            teacher.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            teacher.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            teacher.subject?.toLowerCase().includes(searchQuery.toLowerCase())
+        (teacher) => {
+            const teacherName = getTeacherName(teacher);
+            const teacherEmail = getTeacherEmail(teacher);
+            return (
+                teacherName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                teacherEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                teacher.subject?.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+        }
     );
 
     const totalPages = Math.ceil(filteredTeachers.length / itemsPerPage);
@@ -106,8 +124,8 @@ export default function TeachersPage() {
     const openEditModal = (teacher: Teacher) => {
         setEditingTeacher(teacher);
         setFormData({
-            name: teacher.name,
-            email: teacher.email,
+            name: getTeacherName(teacher),
+            email: getTeacherEmail(teacher),
             subject: teacher.subject || '',
         });
         setFormError('');
@@ -275,15 +293,15 @@ export default function TeachersPage() {
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
                                                         <div className="h-10 w-10 rounded-full flex items-center justify-center text-white font-medium bg-gradient-to-br from-purple-500 to-purple-600">
-                                                            {(teacher.name || 'T').charAt(0).toUpperCase()}
+                                                            {getTeacherName(teacher).charAt(0).toUpperCase()}
                                                         </div>
                                                         <span className="font-medium" style={{ color: 'var(--foreground)' }}>
-                                                            {teacher.name || 'Unknown Teacher'}
+                                                            {getTeacherName(teacher)}
                                                         </span>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4" style={{ color: 'var(--foreground-muted)' }}>
-                                                    {teacher.email}
+                                                    {getTeacherEmail(teacher)}
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     {teacher.subject ? (

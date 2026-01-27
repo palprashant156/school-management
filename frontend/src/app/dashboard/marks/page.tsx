@@ -187,7 +187,7 @@ export default function MarksPage() {
                                 <option value="">Select class</option>
                                 {classes.map((cls) => (
                                     <option key={cls.id} value={cls.id}>
-                                        {cls.name} {cls.section ? `- ${cls.section}` : ''}
+                                        {cls.class_name || cls.name || 'Unnamed'} {cls.section ? `- ${cls.section}` : ''}
                                     </option>
                                 ))}
                             </select>

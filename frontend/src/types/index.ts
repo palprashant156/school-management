@@ -63,7 +63,8 @@ export interface RefreshTokenResponse {
 
 export interface Class {
     id: number;
-    name: string;
+    name?: string;
+    class_name?: string;
     section?: string;
     teacherId?: number;
     teacher?: Teacher;
@@ -90,10 +91,17 @@ export interface Student {
 
 export interface Teacher {
     id: number;
-    name: string;
-    email: string;
+    name?: string;
+    email?: string;
     subject?: string;
     userId?: number;
+    user?: {
+        id: number;
+        email: string;
+        firstName?: string;
+        lastName?: string;
+        username?: string;
+    };
     classes?: Class[];
     createdAt?: string;
     updatedAt?: string;
