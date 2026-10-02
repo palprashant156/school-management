@@ -32,6 +32,17 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+    const getRoleName = (role: unknown): string => {
+        if (!role) return 'user';
+        if (typeof role === 'string') return role;
+        if (typeof role === 'object' && role !== null && 'name' in role) {
+            return (role as { name: string }).name;
+        }
+        return 'user';
+    };
+
+    const displayName = user?.name || (user as unknown as { username?: string })?.username || user?.email || 'User';
+
     // Show loading state while checking auth
     if (isLoading) {
         return (
@@ -127,14 +138,14 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
                             <div
                                 className="h-9 w-9 rounded-full flex items-center justify-center text-white font-medium gradient-primary"
                             >
-                                {user.name?.charAt(0).toUpperCase() || 'U'}
+                                {displayName?.charAt(0).toUpperCase() || 'U'}
                             </div>
                             <div className="hidden sm:block">
                                 <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
-                                    {user.name}
+                                    {displayName}
                                 </p>
                                 <p className="text-xs capitalize" style={{ color: 'var(--foreground-muted)' }}>
-                                    {user.role}
+                                    {getRoleName(user.role)}
                                 </p>
                             </div>
                         </div>

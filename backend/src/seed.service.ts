@@ -71,6 +71,8 @@ export class SeedService implements OnModuleInit {
                     username: 'admin', // Keeping typical username
                     email: adminEmail,
                     password: hashedPassword,
+                    firstName: 'Admin',
+                    lastName: 'User',
                     role: adminRole,
                 });
                 console.log('Created default admin user: admin@example.com / password123');
